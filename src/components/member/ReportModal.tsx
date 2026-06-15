@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { TableFieldDisplay } from "@/components/TableFieldDisplay";
+import {
+  createEmptyTableValue,
+  DEFAULT_TABLE_CONFIG,
+  isTableValueComplete,
+  normalizeTableConfig,
+  normalizeTableValue,
+  type TemplateField,
+} from "@/lib/templateField";
 
-export interface TemplateField {
-  id: string;
-  type: "text" | "textarea" | "number" | "select" | "checkbox";
-  label: string;
-  required: boolean;
-  options?: string[];
-}
+export type { TemplateField };
 
 interface ReportModalProps {
   templateId: string;
@@ -32,7 +35,21 @@ export function ReportModal({
   onClose,
 }: ReportModalProps) {
   const isEdit = !!reportId;
-  const [values, setValues] = useState<Record<string, unknown>>(initialData ?? {});
+  const [values, setValues] = useState<Record<string, unknown>>(() => {
+    const base = initialData ?? {};
+    const next = { ...base };
+
+    for (const field of fields) {
+      if (field.type === "table") {
+        next[field.id] = normalizeTableValue(
+          base[field.id],
+          normalizeTableConfig(field.tableConfig ?? DEFAULT_TABLE_CONFIG)
+        );
+      }
+    }
+
+    return next;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,6 +64,14 @@ export function ReportModal({
     for (const field of fields) {
       if (field.required) {
         const val = values[field.id];
+        if (field.type === "table") {
+          const config = normalizeTableConfig(field.tableConfig ?? DEFAULT_TABLE_CONFIG);
+          if (!isTableValueComplete(val, config)) {
+            setError(`"${field.label}" is required`);
+            return;
+          }
+          continue;
+        }
         if (val === undefined || val === null || val === "") {
           setError(`"${field.label}" is required`);
           return;
@@ -90,7 +115,7 @@ export function ReportModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col">
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl min-h-[80vh] max-h-[95vh] flex flex-col">
 
         {onClose && (
           <button
@@ -175,6 +200,18 @@ export function ReportModal({
                       className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">Yes</span>
                   </label>
+                )}
+
+                {field.type === "table" && (
+                  <TableFieldDisplay
+                    config={field.tableConfig ?? DEFAULT_TABLE_CONFIG}
+                    value={
+                      values[field.id] ??
+                      createEmptyTableValue(field.tableConfig ?? DEFAULT_TABLE_CONFIG)
+                    }
+                    editable
+                    onChange={(nextValue) => setValue(field.id, nextValue)}
+                  />
                 )}
               </div>
             ))}

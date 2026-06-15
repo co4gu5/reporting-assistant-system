@@ -2,8 +2,9 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import type { FieldType } from "@/lib/templateField";
 
-export type FieldType = "text" | "textarea" | "number" | "select" | "checkbox";
+export type { FieldType };
 
 interface PaletteItem {
   type: FieldType;
@@ -60,6 +61,16 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    type: "table",
+    label: "Table",
+    description: "Grid with row and column headers",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18M10 3v18M14 3v18M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" />
       </svg>
     ),
   },

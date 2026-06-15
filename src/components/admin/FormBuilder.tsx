@@ -22,14 +22,15 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FieldPalette, FieldType } from "./FieldPalette";
+import { TableConfigModal } from "./TableConfigModal";
+import { TableFieldDisplay } from "@/components/TableFieldDisplay";
+import {
+  DEFAULT_TABLE_CONFIG,
+  normalizeTableConfig,
+  type TemplateField,
+} from "@/lib/templateField";
 
-export interface TemplateField {
-  id: string;
-  type: FieldType;
-  label: string;
-  required: boolean;
-  options?: string[];
-}
+export type { TemplateField };
 
 interface ActiveDrag {
   id: string;
@@ -97,6 +98,8 @@ function SortableField({
   };
 
   const [optionInput, setOptionInput] = useState("");
+  const [showTableConfig, setShowTableConfig] = useState(false);
+  const tableConfig = normalizeTableConfig(field.tableConfig ?? DEFAULT_TABLE_CONFIG);
 
   function addOption() {
     const trimmed = optionInput.trim();
@@ -145,6 +148,31 @@ function SortableField({
               className="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-transparent focus:border-indigo-400 focus:outline-none bg-transparent py-0.5"
             />
           </div>
+
+          {field.type === "table" && (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {tableConfig.columns.length} column
+                {tableConfig.columns.length !== 1 ? "s" : ""} ×{" "}
+                {tableConfig.rowHeaders.length} row
+                {tableConfig.rowHeaders.length !== 1 ? "s" : ""}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowTableConfig(true)}
+                className="w-full text-left rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors overflow-hidden"
+              >
+                <TableFieldDisplay config={tableConfig} value={[]} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTableConfig(true)}
+                className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Configure table
+              </button>
+            </div>
+          )}
 
           {field.type === "select" && (
             <div className="space-y-2">
@@ -219,6 +247,16 @@ function SortableField({
           </svg>
         </button>
       </div>
+
+      {showTableConfig && (
+        <TableConfigModal
+          config={tableConfig}
+          onSave={(nextConfig) =>
+            onUpdate(field.id, { tableConfig: nextConfig })
+          }
+          onClose={() => setShowTableConfig(false)}
+        />
+      )}
     </div>
   );
 }
@@ -293,6 +331,7 @@ export function FormBuilder({
         label: "",
         required: false,
         options: type === "select" ? [] : undefined,
+        tableConfig: type === "table" ? { ...DEFAULT_TABLE_CONFIG, columns: DEFAULT_TABLE_CONFIG.columns.map((col) => ({ ...col })) } : undefined,
       };
 
       // Dropped onto the canvas background or onto a specific field

@@ -1,10 +1,23 @@
-export interface TemplateField {
-  id: string;
-  type: "text" | "textarea" | "number" | "select" | "checkbox";
-  label: string;
-  required: boolean;
-  options?: string[];
-}
+export type {
+  FieldType,
+  TableColumn,
+  TableColumnType,
+  TableConfig,
+  TableConfigInput,
+  TableFieldValue,
+  TemplateField,
+} from "./templateField";
+export {
+  DEFAULT_TABLE_CONFIG,
+  createEmptyTableValue,
+  getColumnStyle,
+  isTableValueComplete,
+  isTableValueEmpty,
+  normalizeTableConfig,
+  normalizeTableValue,
+} from "./templateField";
+
+import type { TemplateField } from "./templateField";
 
 export const defaultTemplate: TemplateField[] = [
   {

@@ -82,7 +82,11 @@ function CellValue({ value, field }: { value: unknown; field: ReportField }) {
   }
   if (field.type === "number") return <span className="text-sm font-mono text-gray-800 dark:text-gray-200">{String(value)}</span>;
   const str = String(value);
-  return <span className="text-sm text-gray-700 dark:text-gray-300 block max-w-xs truncate" title={str}>{str}</span>;
+  return (
+    <span className="text-sm text-gray-700 dark:text-gray-300 block whitespace-pre-wrap break-words">
+      {str}
+    </span>
+  );
 }
 
 function InlineValue({ value, field }: { value: unknown; field: ReportField }) {
@@ -104,7 +108,7 @@ function InlineValue({ value, field }: { value: unknown; field: ReportField }) {
     return <span className="inline-flex px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-medium">{String(value)}</span>;
   }
   const str = String(value);
-  return <span className="line-clamp-2">{str}</span>;
+  return <span className="whitespace-pre-wrap break-words">{str}</span>;
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
@@ -223,7 +227,7 @@ function ReportsTable({
                     <span className="text-gray-400 dark:text-gray-500">{formatTime(report.date)}</span>
                   </td>
                   {fields.map((f) => (
-                    <td key={f.id} className="px-4 py-3 max-w-xs">
+                    <td key={f.id} className="px-4 py-3 max-w-xs align-top">
                       <CellValue value={report.data[f.id]} field={f} />
                     </td>
                   ))}

@@ -12,6 +12,7 @@ export interface TableColumn {
   header: string;
   type: TableColumnType;
   maxWidth?: number;
+  defaultValue?: string;
 }
 
 export interface TableConfig {
@@ -57,6 +58,7 @@ export function normalizeTableConfig(input: TableConfigInput): TableConfig {
           typeof col.maxWidth === "number" && col.maxWidth > 0
             ? col.maxWidth
             : undefined,
+        defaultValue: col.defaultValue?.trim() || undefined,
       })),
       rowHeaders:
         input.rowHeaders && input.rowHeaders.length > 0
@@ -85,7 +87,7 @@ export function normalizeTableConfig(input: TableConfigInput): TableConfig {
 export function createEmptyTableValue(config: TableConfigInput): TableFieldValue {
   const normalized = normalizeTableConfig(config);
   return normalized.rowHeaders.map(() =>
-    normalized.columns.map(() => "")
+    normalized.columns.map((column) => column.defaultValue ?? "")
   );
 }
 

@@ -1,5 +1,5 @@
-import AdminReportsClient from "./client";
+import { redirect } from "next/navigation";
 
-export default function AdminReportsPage() {
-  return <AdminReportsClient />;
+export default function AdminPage() {
+  redirect("/admin/dashboard");
 }

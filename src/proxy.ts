@@ -28,7 +28,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublic && pathname !== "/") {
-    const dest = payload.role === "ADMIN" ? "/admin" : "/member";
+    const dest = payload.role === "ADMIN" ? "/admin/dashboard" : "/member";
     return NextResponse.redirect(new URL(dest, request.url));
   }
 
@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isMemberPath && payload.role !== "MEMBER") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }
 
   return NextResponse.next();

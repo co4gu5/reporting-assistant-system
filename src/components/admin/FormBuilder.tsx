@@ -26,6 +26,7 @@ import { TableConfigModal } from "./TableConfigModal";
 import { TableFieldDisplay } from "@/components/TableFieldDisplay";
 import {
   DEFAULT_TABLE_CONFIG,
+  createEmptyTableValue,
   normalizeTableConfig,
   type TemplateField,
 } from "@/lib/templateField";
@@ -162,7 +163,7 @@ function SortableField({
                 onClick={() => setShowTableConfig(true)}
                 className="w-full text-left rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors overflow-hidden"
               >
-                <TableFieldDisplay config={tableConfig} value={[]} />
+                <TableFieldDisplay config={tableConfig} value={createEmptyTableValue(tableConfig)} />
               </button>
               <button
                 type="button"

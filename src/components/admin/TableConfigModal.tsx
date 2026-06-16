@@ -84,6 +84,7 @@ function SortableColumnItem({
           : "border-gray-200 dark:border-gray-700"
       }`}
     >
+      <div className="space-y-2">
       <div className="flex gap-2 flex-wrap items-center">
         <button
           type="button"
@@ -171,6 +172,17 @@ function SortableColumnItem({
         >
           Remove
         </button>
+      </div>
+      <input
+        value={column.defaultValue ?? ""}
+        onChange={(e) =>
+          onUpdate(column.id, {
+            defaultValue: e.target.value.trim() ? e.target.value : undefined,
+          })
+        }
+        placeholder="Default value (optional, applies to all rows)"
+        className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
       </div>
     </div>
   );
@@ -273,7 +285,7 @@ export function TableConfigModal({
               Configure table
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Set headers, column types, max widths, and order
+              Set headers, types, defaults, max widths, and order
             </p>
           </div>
           <button
@@ -399,6 +411,7 @@ export function TableConfigModal({
                         <span className="block text-[10px] font-normal text-gray-400 dark:text-gray-500 mt-0.5">
                           {COLUMN_TYPES.find((t) => t.value === column.type)?.label}
                           {column.maxWidth ? ` · ${column.maxWidth}px` : ""}
+                          {column.defaultValue ? ` · default: ${column.defaultValue}` : ""}
                         </span>
                       </th>
                     ))}
@@ -421,13 +434,14 @@ export function TableConfigModal({
                               ? { maxWidth: column.maxWidth, width: column.maxWidth }
                               : undefined
                           }
-                          className="px-3 py-2 text-gray-400 dark:text-gray-500 italic truncate"
+                          className="px-3 py-2 text-gray-400 dark:text-gray-500 truncate"
                         >
-                          {column.type === "textarea"
-                            ? "Long text"
-                            : column.type === "number"
-                              ? "0"
-                              : "Text"}
+                          {column.defaultValue ||
+                            (column.type === "textarea"
+                              ? "Long text"
+                              : column.type === "number"
+                                ? "0"
+                                : "Text")}
                         </td>
                       ))}
                     </tr>

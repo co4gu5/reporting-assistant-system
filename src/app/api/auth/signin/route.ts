@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      redirectTo: user.role === "ADMIN" ? "/admin" : "/member",
+      redirectTo: user.role === "ADMIN" ? "/admin/dashboard" : "/member",
     });
 
     response.cookies.set("token", token, {

@@ -1,7 +1,6 @@
 import {
   getCurrentWeekDateStrings,
   getLocalDateStr,
-  getServerTimezone,
   getTodayWeekdayIndex,
 } from "./timezone";
 import {
@@ -192,9 +191,9 @@ export function aggregateInterviewReports(
     userId: string;
     userName: string;
     template: { fields: unknown };
-  }[]
+  }[],
+  timezone: string
 ): WeeklyDashboardData {
-  const timezone = getServerTimezone();
   const weekDays = getWeekdayLabels();
   const weekDates = getCurrentWeekDateStrings(undefined, timezone);
   const memberMap = new Map<string, MemberWeeklySeries>();

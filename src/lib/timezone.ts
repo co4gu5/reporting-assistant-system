@@ -1,6 +1,8 @@
 const DEFAULT_SERVER_TIMEZONE = "America/New_York";
 
-function isValidTimezone(timezone: string): boolean {
+export { DEFAULT_SERVER_TIMEZONE };
+
+export function isValidTimezone(timezone: string): boolean {
   try {
     Intl.DateTimeFormat("en-US", { timeZone: timezone });
     return true;
@@ -30,16 +32,10 @@ export function normalizeTimezone(
   return fallback;
 }
 
-export function getServerTimezone(): string {
-  return normalizeTimezone(
-    process.env.SERVER_TIMEZONE || process.env.TZ
-  );
-}
-
 /** Returns "HH:MM" in the given IANA timezone, reliably on all Node.js versions. */
 export function getCurrentHHMM(
   date: Date,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): string {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
@@ -56,7 +52,7 @@ export function getCurrentHHMM(
 /** Returns "YYYY-MM-DD" in the given IANA timezone. */
 export function getLocalDateStr(
   date: Date,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(date);
 }
@@ -67,7 +63,7 @@ export function getLocalDateStr(
  */
 export function getDayBoundsUTC(
   date: Date,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): [Date, Date] {
   const dateStr = getLocalDateStr(date, timezone);
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -98,7 +94,7 @@ export function getDayBoundsUTC(
 
 export function getDayBoundsForDateStr(
   dateStr: string,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): [Date, Date] {
   const [year, month, day] = dateStr.split("-").map(Number);
   const probe = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
@@ -108,7 +104,7 @@ export function getDayBoundsForDateStr(
 function shiftDateStr(
   dateStr: string,
   days: number,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): string {
   if (days === 0) return dateStr;
 
@@ -130,7 +126,7 @@ function shiftDateStr(
 
 function getWeekdayShort(
   dateStr: string,
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): string {
   const [year, month, day] = dateStr.split("-").map(Number);
   const probe = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
@@ -143,7 +139,7 @@ function getWeekdayShort(
 /** Mon–Fri date strings (YYYY-MM-DD) for the week containing referenceDate. */
 export function getCurrentWeekDateStrings(
   referenceDate = new Date(),
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): string[] {
   const todayStr = getLocalDateStr(referenceDate, timezone);
   const weekday = getWeekdayShort(todayStr, timezone);
@@ -169,7 +165,7 @@ export function getCurrentWeekDateStrings(
 /** Inclusive index into Mon–Fri (0–4), or Friday on weekends. */
 export function getTodayWeekdayIndex(
   referenceDate = new Date(),
-  timezone = getServerTimezone()
+  timezone = DEFAULT_SERVER_TIMEZONE
 ): number {
   const todayStr = getLocalDateStr(referenceDate, timezone);
   const weekDates = getCurrentWeekDateStrings(referenceDate, timezone);

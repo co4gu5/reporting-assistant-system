@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { getAppTimezone } from "@/lib/appSettings";
 import { aggregateInterviewReports } from "@/lib/interviewDashboard";
 import {
   getCurrentWeekDateStrings,
   getDayBoundsForDateStr,
-  getServerTimezone,
 } from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const timezone = getServerTimezone();
+  const timezone = await getAppTimezone();
   const weekDates = getCurrentWeekDateStrings(undefined, timezone);
   const [rangeStart] = getDayBoundsForDateStr(weekDates[0], timezone);
   const [, rangeEnd] = getDayBoundsForDateStr(
@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
       userId: report.userId,
       userName: report.user.name,
       template: report.template,
-    }))
+    })),
+    timezone
   );
 
   return NextResponse.json(dashboard);

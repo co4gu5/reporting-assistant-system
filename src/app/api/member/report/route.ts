@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { getAppTimezone } from "@/lib/appSettings";
 import { defaultTemplate } from "@/lib/defaultTemplate";
+import { getDayBoundsUTC } from "@/lib/timezone";
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -15,15 +17,13 @@ export async function POST(req: NextRequest) {
   try {
     const { templateId, data } = await req.json();
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const timezone = await getAppTimezone();
+    const [dayStart, dayEnd] = getDayBoundsUTC(new Date(), timezone);
 
     const existing = await prisma.report.findFirst({
       where: {
         userId: payload.sub,
-        date: { gte: today, lt: tomorrow },
+        date: { gte: dayStart, lt: dayEnd },
       },
     });
 

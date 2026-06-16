@@ -138,6 +138,7 @@ export default function DashboardClient() {
           labels={data?.weekDays ?? ["Mon", "Tue", "Wed", "Thu", "Fri"]}
           series={todaySeries}
           selected={todaySelected}
+          lineEndIndex={data?.todayIndex}
           hiddenMemberIds={hiddenMemberIds}
           onToggleMember={toggleMemberVisibility}
           onToggleCategory={(category) =>
@@ -150,6 +151,7 @@ export default function DashboardClient() {
           labels={data?.weekDays ?? ["Mon", "Tue", "Wed", "Thu", "Fri"]}
           series={newSeries}
           selected={newSelected}
+          lineEndIndex={data?.todayIndex}
           hiddenMemberIds={hiddenMemberIds}
           onToggleMember={toggleMemberVisibility}
           onToggleCategory={(category) =>

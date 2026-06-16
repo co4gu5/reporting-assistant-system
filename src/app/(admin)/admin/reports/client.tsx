@@ -201,7 +201,14 @@ function ReportsTable({
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap w-44">Member</th>
                 <th className="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap w-36">Date</th>
                 {fields.map((f) => (
-                  <th key={f.id} className="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap max-w-xs">
+                  <th
+                    key={f.id}
+                    className={`px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide ${
+                      f.type === "table"
+                        ? "w-px whitespace-nowrap"
+                        : "whitespace-nowrap max-w-xs"
+                    }`}
+                  >
                     <span className="block truncate max-w-[180px]" title={f.label}>{f.label}</span>
                   </th>
                 ))}
@@ -227,7 +234,12 @@ function ReportsTable({
                     <span className="text-gray-400 dark:text-gray-500">{formatTime(report.date)}</span>
                   </td>
                   {fields.map((f) => (
-                    <td key={f.id} className="px-4 py-3 max-w-xs align-top">
+                    <td
+                      key={f.id}
+                      className={`px-4 py-3 align-top ${
+                        f.type === "table" ? "w-px whitespace-nowrap" : "max-w-xs"
+                      }`}
+                    >
                       <CellValue value={report.data[f.id]} field={f} />
                     </td>
                   ))}

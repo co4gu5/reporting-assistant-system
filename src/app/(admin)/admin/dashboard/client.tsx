@@ -98,7 +98,7 @@ export default function DashboardClient() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -131,7 +131,7 @@ export default function DashboardClient() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-[360px]">
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 auto-rows-fr min-h-[70vh] xl:min-h-[420px] items-stretch">
         <InterviewLineChart
           title="Day"
           subtitle="Day row per member"
@@ -171,6 +171,21 @@ export default function DashboardClient() {
             setWeekSelected((prev) => toggleCategoryInSet(prev, category))
           }
         />
+        <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 sm:p-4 h-full min-h-0 flex flex-col xl:hidden">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-400 dark:text-gray-500">
+              More charts
+            </h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Additional dashboard views
+            </p>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-sm font-medium text-gray-400 dark:text-gray-500">
+              Coming soon
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,8 @@ interface TableFieldDisplayProps {
   value: unknown;
   editable?: boolean;
   onChange?: (value: TableFieldValue) => void;
+  /** Tighter layout for inline/read-only views (defaults to !editable). */
+  compact?: boolean;
 }
 
 const inputClassName =
@@ -21,9 +23,11 @@ export function TableFieldDisplay({
   value,
   editable = false,
   onChange,
+  compact,
 }: TableFieldDisplayProps) {
   const normalizedConfig = normalizeTableConfig(config);
   const tableValue = normalizeTableValue(value, config);
+  const isCompact = compact ?? !editable;
 
   function updateCell(rowIndex: number, colIndex: number, cellValue: string) {
     if (!onChange) return;
@@ -36,16 +40,32 @@ export function TableFieldDisplay({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-      <table className="w-full text-sm">
+    <div
+      className={`rounded-xl border border-gray-200 dark:border-gray-700 ${
+        editable ? "w-full overflow-x-auto" : "w-fit max-w-full"
+      }`}
+    >
+      <table className={isCompact ? "text-xs w-auto" : "w-full text-sm"}>
         <thead>
           <tr className="bg-gray-50 dark:bg-gray-800/80">
-            <th className="px-3 py-2 border-b border-r border-gray-200 dark:border-gray-700 w-px whitespace-nowrap" />
+            <th
+              className={`border-b border-r border-gray-200 dark:border-gray-700 w-px whitespace-nowrap ${
+                isCompact ? "px-2 py-1.5" : "px-3 py-2"
+              }`}
+            />
             {normalizedConfig.columns.map((column, index) => (
               <th
                 key={`display-col-${index}`}
-                style={getColumnStyle(column)}
-                className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300"
+                style={
+                  isCompact
+                    ? undefined
+                    : getColumnStyle(column)
+                }
+                className={`border-b border-gray-200 dark:border-gray-700 text-left font-semibold text-gray-600 dark:text-gray-300 ${
+                  isCompact
+                    ? "px-2 py-1.5 text-[11px] whitespace-nowrap"
+                    : "px-3 py-2 text-xs"
+                }`}
               >
                 {column.header || `Column ${index + 1}`}
               </th>
@@ -58,14 +78,22 @@ export function TableFieldDisplay({
               key={`display-row-${rowIndex}`}
               className="border-t border-gray-100 dark:border-gray-800"
             >
-              <th className="px-3 py-2 border-r border-gray-200 dark:border-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 w-px whitespace-nowrap">
+              <th
+                className={`border-r border-gray-200 dark:border-gray-700 text-left font-semibold text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 w-px whitespace-nowrap ${
+                  isCompact ? "px-2 py-1.5 text-[11px]" : "px-3 py-2 text-xs"
+                }`}
+              >
                 {rowHeader || `Row ${rowIndex + 1}`}
               </th>
               {normalizedConfig.columns.map((column, colIndex) => (
                 <td
                   key={`display-cell-${rowIndex}-${colIndex}`}
-                  style={getColumnStyle(column)}
-                  className="px-3 py-2 align-top"
+                  style={isCompact ? undefined : getColumnStyle(column)}
+                  className={`align-top ${
+                    isCompact
+                      ? "px-2 py-1.5 whitespace-nowrap"
+                      : "px-3 py-2"
+                  }`}
                 >
                   {editable ? (
                     column.type === "textarea" ? (
@@ -91,7 +119,13 @@ export function TableFieldDisplay({
                       />
                     )
                   ) : (
-                    <span className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
+                    <span
+                      className={`text-gray-900 dark:text-gray-100 ${
+                        isCompact
+                          ? "text-xs whitespace-nowrap tabular-nums"
+                          : "text-sm whitespace-pre-wrap break-words"
+                      }`}
+                    >
                       {tableValue[rowIndex][colIndex] || (
                         <span className="text-gray-400 dark:text-gray-500 italic">
                           —

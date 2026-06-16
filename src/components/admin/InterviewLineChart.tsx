@@ -79,17 +79,17 @@ export function InterviewLineChart({
   const { maxValue, ticks: yTicks } = buildYAxis(allValues);
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 h-full flex flex-col">
-      <div className="mb-3">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 sm:p-4 h-full min-h-0 flex flex-col">
+      <div className="mb-2 sm:mb-3 shrink-0">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {title}
         </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
           {subtitle}
         </p>
       </div>
 
-      <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+      <div className="mb-2 sm:mb-3 pb-2 sm:pb-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-2">
           {INTERVIEW_CATEGORIES.map((category) => (
             <label
@@ -108,10 +108,11 @@ export function InterviewLineChart({
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 min-h-0 w-full">
         <svg
           viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-          className="w-full max-w-full h-auto"
+          className="w-full h-full block"
+          preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${title} line chart`}
         >
@@ -204,7 +205,7 @@ export function InterviewLineChart({
       </div>
 
       {series.length > 0 ? (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-3 gap-y-1.5">
+        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1.5 shrink-0">
           {series.map((member) => {
             const hidden = hiddenMemberIds.has(member.id);
             return (
@@ -230,7 +231,7 @@ export function InterviewLineChart({
           })}
         </div>
       ) : (
-        <p className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">
+        <p className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 shrink-0">
           No member reports this week
         </p>
       )}

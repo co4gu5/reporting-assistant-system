@@ -13,7 +13,17 @@ function createDefaultSelected() {
   return new Set<InterviewCategory>(INTERVIEW_CATEGORIES);
 }
 
-function toggleInSet(
+function toggleInSet<T>(prev: Set<T>, value: T): Set<T> {
+  const next = new Set(prev);
+  if (next.has(value)) {
+    next.delete(value);
+  } else {
+    next.add(value);
+  }
+  return next;
+}
+
+function toggleCategoryInSet(
   prev: Set<InterviewCategory>,
   category: InterviewCategory
 ): Set<InterviewCategory> {
@@ -34,6 +44,13 @@ export default function DashboardClient() {
   const [todaySelected, setTodaySelected] = useState(createDefaultSelected);
   const [newSelected, setNewSelected] = useState(createDefaultSelected);
   const [weekSelected, setWeekSelected] = useState(createDefaultSelected);
+  const [hiddenMemberIds, setHiddenMemberIds] = useState<Set<string>>(
+    () => new Set()
+  );
+
+  const toggleMemberVisibility = useCallback((memberId: string) => {
+    setHiddenMemberIds((prev) => toggleInSet(prev, memberId));
+  }, []);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -121,8 +138,10 @@ export default function DashboardClient() {
           labels={data?.weekDays ?? ["Mon", "Tue", "Wed", "Thu", "Fri"]}
           series={todaySeries}
           selected={todaySelected}
+          hiddenMemberIds={hiddenMemberIds}
+          onToggleMember={toggleMemberVisibility}
           onToggleCategory={(category) =>
-            setTodaySelected((prev) => toggleInSet(prev, category))
+            setTodaySelected((prev) => toggleCategoryInSet(prev, category))
           }
         />
         <InterviewLineChart
@@ -131,8 +150,10 @@ export default function DashboardClient() {
           labels={data?.weekDays ?? ["Mon", "Tue", "Wed", "Thu", "Fri"]}
           series={newSeries}
           selected={newSelected}
+          hiddenMemberIds={hiddenMemberIds}
+          onToggleMember={toggleMemberVisibility}
           onToggleCategory={(category) =>
-            setNewSelected((prev) => toggleInSet(prev, category))
+            setNewSelected((prev) => toggleCategoryInSet(prev, category))
           }
         />
         <InterviewLineChart
@@ -141,8 +162,11 @@ export default function DashboardClient() {
           labels={data?.weekDays ?? ["Mon", "Tue", "Wed", "Thu", "Fri"]}
           series={weekSeries}
           selected={weekSelected}
+          lineEndIndex={data?.todayIndex}
+          hiddenMemberIds={hiddenMemberIds}
+          onToggleMember={toggleMemberVisibility}
           onToggleCategory={(category) =>
-            setWeekSelected((prev) => toggleInSet(prev, category))
+            setWeekSelected((prev) => toggleCategoryInSet(prev, category))
           }
         />
       </div>

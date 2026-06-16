@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { aggregateInterviewReports } from "@/lib/interviewDashboard";
 import {
-  aggregateInterviewReports,
-  getCurrentWeekDays,
-} from "@/lib/interviewDashboard";
+  getCurrentWeekDateStrings,
+  getDayBoundsForDateStr,
+  getServerTimezone,
+} from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -15,17 +17,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const weekDates = getCurrentWeekDays();
-  const rangeStart = new Date(weekDates[0]);
-  rangeStart.setHours(0, 0, 0, 0);
-  const rangeEnd = new Date(weekDates[weekDates.length - 1]);
-  rangeEnd.setHours(23, 59, 59, 999);
+  const timezone = getServerTimezone();
+  const weekDates = getCurrentWeekDateStrings(undefined, timezone);
+  const [rangeStart] = getDayBoundsForDateStr(weekDates[0], timezone);
+  const [, rangeEnd] = getDayBoundsForDateStr(
+    weekDates[weekDates.length - 1],
+    timezone
+  );
 
   const reports = await prisma.report.findMany({
     where: {
       date: {
         gte: rangeStart,
-        lte: rangeEnd,
+        lt: rangeEnd,
       },
     },
     include: {

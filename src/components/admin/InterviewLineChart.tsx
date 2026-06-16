@@ -13,6 +13,10 @@ interface InterviewLineChartProps {
   series: ChartMemberSeries[];
   selected: Set<InterviewCategory>;
   onToggleCategory: (category: InterviewCategory) => void;
+  hiddenMemberIds: Set<string>;
+  onToggleMember: (memberId: string) => void;
+  /** Inclusive last point to draw (0-based). Defaults to the last label. */
+  lineEndIndex?: number;
 }
 
 const CHART_WIDTH = 320;
@@ -57,12 +61,22 @@ export function InterviewLineChart({
   series,
   selected,
   onToggleCategory,
+  hiddenMemberIds,
+  onToggleMember,
+  lineEndIndex,
 }: InterviewLineChartProps) {
   const plotWidth = CHART_WIDTH - PADDING.left - PADDING.right;
   const plotHeight = CHART_HEIGHT - PADDING.top - PADDING.bottom;
-  const allValues = series.flatMap((member) => member.values);
-  const { maxValue, ticks: yTicks } = buildYAxis(allValues);
   const pointCount = labels.length;
+  const endIndex = Math.min(
+    lineEndIndex ?? pointCount - 1,
+    pointCount - 1
+  );
+  const visibleSeries = series.filter((member) => !hiddenMemberIds.has(member.id));
+  const allValues = visibleSeries.flatMap((member) =>
+    member.values.slice(0, endIndex + 1)
+  );
+  const { maxValue, ticks: yTicks } = buildYAxis(allValues);
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 h-full flex flex-col">
@@ -143,8 +157,8 @@ export function InterviewLineChart({
             strokeWidth={1}
           />
 
-          {series.map((member) => {
-            const points = member.values.map((value, index) => ({
+          {visibleSeries.map((member) => {
+            const points = member.values.slice(0, endIndex + 1).map((value, index) => ({
               x: xForIndex(index, pointCount, plotWidth, PADDING.left),
               y: PADDING.top + plotHeight - (value / maxValue) * plotHeight,
             }));
@@ -191,20 +205,29 @@ export function InterviewLineChart({
 
       {series.length > 0 ? (
         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-3 gap-y-1.5">
-          {series.map((member) => (
-            <div
-              key={`legend-${member.id}`}
-              className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-400"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: member.color }}
-              />
-              <span className="truncate max-w-[120px]" title={member.name}>
-                {member.name}
-              </span>
-            </div>
-          ))}
+          {series.map((member) => {
+            const hidden = hiddenMemberIds.has(member.id);
+            return (
+              <button
+                key={`legend-${member.id}`}
+                type="button"
+                onClick={() => onToggleMember(member.id)}
+                aria-pressed={!hidden}
+                title={hidden ? `Show ${member.name}` : `Hide ${member.name}`}
+                className={`inline-flex items-center gap-1.5 text-[11px] cursor-pointer select-none rounded px-1 -mx-1 transition-opacity hover:opacity-80 ${
+                  hidden
+                    ? "opacity-40 text-gray-400 dark:text-gray-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: member.color }}
+                />
+                <span className="truncate max-w-[120px]">{member.name}</span>
+              </button>
+            );
+          })}
         </div>
       ) : (
         <p className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">

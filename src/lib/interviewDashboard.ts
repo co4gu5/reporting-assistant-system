@@ -1,4 +1,10 @@
 import {
+  getCurrentWeekDateStrings,
+  getLocalDateStr,
+  getServerTimezone,
+  getTodayWeekdayIndex,
+} from "./timezone";
+import {
   normalizeTableConfig,
   normalizeTableValue,
   type TableConfig,
@@ -33,6 +39,8 @@ export interface MemberWeeklySeries {
 export interface WeeklyDashboardData {
   weekDays: string[];
   weekDates: string[];
+  /** Inclusive index into weekDays (0=Mon … 4=Fri); line charts may stop here. */
+  todayIndex: number;
   members: MemberWeeklySeries[];
   hasInterviewTable: boolean;
 }
@@ -93,21 +101,6 @@ export function sumSelectedCategories(
 
 export function getWeekdayLabels(): string[] {
   return ["Mon", "Tue", "Wed", "Thu", "Fri"];
-}
-
-export function getCurrentWeekDays(referenceDate = new Date()): Date[] {
-  const date = new Date(referenceDate);
-  const day = date.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(date);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(date.getDate() + mondayOffset);
-
-  return Array.from({ length: 5 }, (_, index) => {
-    const next = new Date(monday);
-    next.setDate(monday.getDate() + index);
-    return next;
-  });
 }
 
 function parseCount(value: unknown): number {
@@ -201,8 +194,9 @@ export function aggregateInterviewReports(
     template: { fields: unknown };
   }[]
 ): WeeklyDashboardData {
+  const timezone = getServerTimezone();
   const weekDays = getWeekdayLabels();
-  const weekDates = getCurrentWeekDays();
+  const weekDates = getCurrentWeekDateStrings(undefined, timezone);
   const memberMap = new Map<string, MemberWeeklySeries>();
   let hasInterviewTable = false;
 
@@ -222,12 +216,8 @@ export function aggregateInterviewReports(
 
     hasInterviewTable = true;
 
-    const reportDate = new Date(report.date);
-    reportDate.setHours(0, 0, 0, 0);
-
-    const dayIndex = weekDates.findIndex(
-      (weekDate) => weekDate.getTime() === reportDate.getTime()
-    );
+    const reportDateStr = getLocalDateStr(new Date(report.date), timezone);
+    const dayIndex = weekDates.indexOf(reportDateStr);
     if (dayIndex === -1) continue;
 
     if (!memberMap.has(report.userId)) {
@@ -255,7 +245,8 @@ export function aggregateInterviewReports(
 
   return {
     weekDays,
-    weekDates: weekDates.map((date) => date.toISOString().slice(0, 10)),
+    weekDates,
+    todayIndex: getTodayWeekdayIndex(undefined, timezone),
     members,
     hasInterviewTable,
   };

@@ -1,58 +1,8 @@
-/** Returns "HH:MM" in the given IANA timezone, reliably on all Node.js versions. */
-function getCurrentHHMM(date: Date, timezone: string): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23", // always 0–23, never "24:xx" or "AM/PM"
-  }).formatToParts(date);
-
-  const hour   = parts.find((p) => p.type === "hour")?.value   ?? "00";
-  const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
-  return `${hour}:${minute}`;
-}
-
-/** Returns "YYYY-MM-DD" in the given IANA timezone. */
-function getLocalDateStr(date: Date, timezone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(date);
-  // en-CA locale produces "YYYY-MM-DD" reliably
-}
-
-/**
- * Returns the UTC Date objects for [start-of-day, start-of-next-day]
- * in the given IANA timezone, avoiding the `new Date("YYYY-MM-DD")` UTC-parse trap.
- */
-function getDayBoundsUTC(date: Date, timezone: string): [Date, Date] {
-  const dateStr = getLocalDateStr(date, timezone); // "YYYY-MM-DD"
-
-  // Build a "YYYY-MM-DDTHH:MM:SS" string for midnight in the target timezone,
-  // then find the real UTC equivalent by using the Intl offset trick.
-  const [year, month, day] = dateStr.split("-").map(Number);
-
-  // Probe: create a UTC date that approximates midnight local, then
-  // measure the real offset at that moment and correct it.
-  const probe = new Date(Date.UTC(year, month - 1, day, 12, 0, 0)); // noon UTC as safe probe
-  const localMidnightStr = `${dateStr}T00:00:00`;
-
-  // Format probe as local time to discover timezone offset
-  const formatter = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: timezone,
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false,
-  });
-
-  // Iterate once to nail the exact UTC instant for local midnight
-  // (handles DST correctly by using the actual offset at midnight)
-  const localNoonStr = formatter.format(probe);          // "YYYY-MM-DD HH:MM:SS"
-  const localNoon    = new Date(localNoonStr.replace(" ", "T") + "Z"); // treat as UTC to compute delta
-  const probeMid     = new Date(localMidnightStr + "Z");               // naive midnight as if UTC
-  const offsetMs     = probe.getTime() - localNoon.getTime();          // real UTC-local delta in ms
-  const startUTC     = new Date(probeMid.getTime() + offsetMs);        // true UTC midnight
-  const endUTC       = new Date(startUTC.getTime() + 24 * 60 * 60 * 1000);
-
-  return [startUTC, endUTC];
-}
+import {
+  getCurrentHHMM,
+  getDayBoundsUTC,
+  getLocalDateStr,
+} from "@/lib/timezone";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {

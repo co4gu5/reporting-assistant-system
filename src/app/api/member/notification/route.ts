@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { normalizeTimezone } from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -33,7 +34,7 @@ export async function PUT(req: NextRequest) {
 
   const data: Record<string, unknown> = {};
   if (alarmTime          !== undefined) data.alarmTime          = alarmTime;
-  if (timezone           !== undefined) data.timezone           = timezone;
+  if (timezone           !== undefined) data.timezone           = normalizeTimezone(timezone, "UTC");
   if (enabled            !== undefined) data.enabled            = enabled;
   if (notificationEmail  !== undefined) data.notificationEmail  = notificationEmail || null;
 
@@ -43,7 +44,7 @@ export async function PUT(req: NextRequest) {
     create: {
       userId:            payload.sub,
       alarmTime:         alarmTime        ?? "09:00",
-      timezone:          timezone         ?? "UTC",
+      timezone:          normalizeTimezone(timezone, "UTC"),
       enabled:           enabled          ?? true,
       notificationEmail: notificationEmail || null,
     },

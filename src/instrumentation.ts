@@ -2,6 +2,7 @@ import {
   getCurrentHHMM,
   getDayBoundsUTC,
   getLocalDateStr,
+  normalizeTimezone,
 } from "@/lib/timezone";
 
 export async function register() {
@@ -20,18 +21,20 @@ export async function register() {
         });
 
         for (const setting of settings) {
+          const timezone = normalizeTimezone(setting.timezone, "UTC");
+
           // ── 1. Does the current local time match the alarm? ─────────────────
-          const currentHHMM = getCurrentHHMM(now, setting.timezone);
+          const currentHHMM = getCurrentHHMM(now, timezone);
           console.log(
-            `[Notification] ${setting.user.email} → local=${currentHHMM} alarm=${setting.alarmTime} tz=${setting.timezone}`
+            `[Notification] ${setting.user.email} → local=${currentHHMM} alarm=${setting.alarmTime} tz=${timezone}`
           );
 
           if (currentHHMM !== setting.alarmTime) continue;
 
           // ── 2. Already notified today? ──────────────────────────────────────
           if (setting.lastNotifiedAt) {
-            const lastDateStr  = getLocalDateStr(setting.lastNotifiedAt, setting.timezone);
-            const todayDateStr = getLocalDateStr(now, setting.timezone);
+            const lastDateStr  = getLocalDateStr(setting.lastNotifiedAt, timezone);
+            const todayDateStr = getLocalDateStr(now, timezone);
             if (lastDateStr === todayDateStr) {
               console.log(`[Notification] Already sent today for ${setting.user.email}, skipping.`);
               continue;
@@ -39,7 +42,7 @@ export async function register() {
           }
 
           // ── 3. Already submitted a report today (in user's timezone)? ───────
-          const [dayStart, dayEnd] = getDayBoundsUTC(now, setting.timezone);
+          const [dayStart, dayEnd] = getDayBoundsUTC(now, timezone);
           const existingReport = await prisma.report.findFirst({
             where: {
               userId: setting.userId,

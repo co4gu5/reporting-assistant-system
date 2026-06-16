@@ -1,10 +1,38 @@
 const DEFAULT_SERVER_TIMEZONE = "America/New_York";
 
+function isValidTimezone(timezone: string): boolean {
+  try {
+    Intl.DateTimeFormat("en-US", { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Normalize env/DB timezone strings to a valid IANA id. */
+export function normalizeTimezone(
+  timezone: string | undefined | null,
+  fallback = DEFAULT_SERVER_TIMEZONE
+): string {
+  if (timezone == null) return fallback;
+
+  const trimmed = timezone.trim();
+  if (!trimmed) return fallback;
+
+  // Vercel/Linux often set TZ to POSIX forms like ":UTC" which Intl rejects.
+  if (trimmed.startsWith(":")) {
+    const withoutColon = trimmed.slice(1);
+    if (isValidTimezone(withoutColon)) return withoutColon;
+    return fallback;
+  }
+
+  if (isValidTimezone(trimmed)) return trimmed;
+  return fallback;
+}
+
 export function getServerTimezone(): string {
-  return (
-    process.env.SERVER_TIMEZONE ||
-    process.env.TZ ||
-    DEFAULT_SERVER_TIMEZONE
+  return normalizeTimezone(
+    process.env.SERVER_TIMEZONE || process.env.TZ
   );
 }
 
